@@ -27,7 +27,7 @@ use mipidsi::options::{
 use {defmt_rtt as _, panic_probe as _};
 
 // Provides the Display builder
-use mipidsi::Builder;
+use mipidsi::{Builder, TestImage};
 
 use crate::touch::Touch;
 
@@ -102,7 +102,8 @@ async fn main(_spawner: Spawner) {
         .unwrap();
 
     // Make the display all black
-    display.clear(Rgb565::BLACK).unwrap();
+    // TestImage::new().draw(&mut display);
+    // display.clear(Rgb565::BLACK).unwrap();
     let area: Rectangle = Rectangle::new(Point::new(50, 50), Size::new(50, 50));
     let _ = display.fill_solid(&area, Rgb565::RED);
 
