@@ -21,7 +21,9 @@ use embedded_graphics::{
     // prelude::*,
     primitives::{Circle, Primitive, PrimitiveStyle, Triangle},
 };
-use mipidsi::options::{Orientation, Rotation};
+use mipidsi::options::{
+    ColorInversion, ColorOrder, HorizontalRefreshOrder, RefreshOrder, VerticalRefreshOrder,
+};
 use {defmt_rtt as _, panic_probe as _};
 
 // Provides the Display builder
@@ -89,35 +91,50 @@ async fn main(_spawner: Spawner) {
     // Define the display from the display interface and initialize it
     let mut display = Builder::new(mipidsi::models::ILI9488Rgb565, di)
         .reset_pin(rst)
+        .refresh_order(RefreshOrder::new(
+            VerticalRefreshOrder::BottomToTop,
+            HorizontalRefreshOrder::RightToLeft,
+        ))
+        .invert_colors(ColorInversion::Inverted)
+        .color_order(ColorOrder::Bgr)
+        .display_size(480, 320) // w, h
         .init(&mut Delay)
         .unwrap();
 
-    // set default orientation
-    display.set_orientation(Orientation::new().rotate(Rotation::Deg90));
-
     // Make the display all black
     display.clear(Rgb565::BLACK).unwrap();
-    let area: Rectangle = Rectangle::new(Point::new(0, 0), Size::new(200, 100));
-    display.fill_solid(&area, Rgb565::BLUE);
+    let area: Rectangle = Rectangle::new(Point::new(50, 50), Size::new(50, 50));
+    let _ = display.fill_solid(&area, Rgb565::RED);
 
     // Draw a smiley face with white eyes and a red mouth
     // draw_smiley(&mut display).unwrap();
+    let delay = Duration::from_millis(100);
 
+    let mut on = true;
     loop {
-        // if let Some((x, y)) = touch.read() {
-        //     let style = PrimitiveStyleBuilder::new()
-        //         .fill_color(Rgb565::BLUE)
-        //         .build();
+        if let Some((_x, _y)) = touch.read() {
+            if on {
+                bl.set_low();
+                on = false;
+            } else {
+                bl.set_high();
+                on = true;
+            }
+            Timer::after(delay).await;
 
-        // Rectangle::new(Point::new(x - 1, y - 1), Size::new(3, 3))
-        //     .into_styled(style)
-        //     .draw(&mut display)
-        //     .unwrap();
-        // }
+            //     let style = PrimitiveStyleBuilder::new()
+            //         .fill_color(Rgb565::BLUE)
+            //         .build();
+
+            // Rectangle::new(Point::new(x - 1, y - 1), Size::new(3, 3))
+            //     .into_styled(style)
+            //     .draw(&mut display)
+            //     .unwrap();
+        }
     }
 }
 
-fn draw_smiley<T: DrawTarget<Color = Rgb565>>(display: &mut T) -> Result<(), T::Error> {
+fn _draw_smiley<T: DrawTarget<Color = Rgb565>>(display: &mut T) -> Result<(), T::Error> {
     // Draw the left eye as a circle located at (50, 100), with a diameter of 40, filled with white
     Circle::new(Point::new(50, 100), 40)
         .into_styled(PrimitiveStyle::with_fill(Rgb565::WHITE))
