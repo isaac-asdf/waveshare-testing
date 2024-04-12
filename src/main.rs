@@ -21,8 +21,10 @@ use embedded_graphics::{
     // prelude::*,
     primitives::{Circle, Primitive, PrimitiveStyle, Triangle},
 };
+use heapless::Vec;
 use mipidsi::options::{
-    ColorInversion, ColorOrder, HorizontalRefreshOrder, RefreshOrder, VerticalRefreshOrder,
+    ColorInversion, ColorOrder, HorizontalRefreshOrder, Orientation, RefreshOrder,
+    VerticalRefreshOrder,
 };
 use {defmt_rtt as _, panic_probe as _};
 
@@ -97,15 +99,22 @@ async fn main(_spawner: Spawner) {
         ))
         .invert_colors(ColorInversion::Inverted)
         .color_order(ColorOrder::Bgr)
-        .display_size(480, 320) // w, h
+        .display_size(320, 480) // w, h
         .init(&mut Delay)
         .unwrap();
 
     // Make the display all black
     // TestImage::new().draw(&mut display);
-    // display.clear(Rgb565::BLACK).unwrap();
-    let area: Rectangle = Rectangle::new(Point::new(50, 50), Size::new(50, 50));
-    let _ = display.fill_solid(&area, Rgb565::RED);
+    display.clear(Rgb565::BLACK).unwrap();
+    // let area: Rectangle = Rectangle::new(Point::new(50, 50), Size::new(50, 50));
+    // let _ = display.fill_solid(&area, Rgb565::RED);
+    display.set_pixel(50, 50, Rgb565::BLUE);
+    let col = Rgb565::RED;
+    let pix: Vec<Rgb565, 6> = heapless::Vec::from_slice(&[col, col, col, col, col, col]).unwrap();
+    display.set_pixels(50, 50, 50, 50, pix);
+    let col = Rgb565::BLUE;
+    let pix: Vec<Rgb565, 6> = heapless::Vec::from_slice(&[col, col, col, col, col, col]).unwrap();
+    display.set_pixels(50, 50, 50, 50, pix);
 
     // Draw a smiley face with white eyes and a red mouth
     // draw_smiley(&mut display).unwrap();
